@@ -1,0 +1,120 @@
+---
+title: 'Associations Between Refrigerator Size, Type and Number of Household Members '
+author: "Jinghan Cui, Siran Zhao, Sijian Li, Mengyun Li"
+date: "10/9/2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+```
+The purpose of this project is to help refrigerator manufacturer better evaluate the target consumer and the consumer demand. After analysing the refrigerator data from US. Energy Information Administration. We would like to explore the relation between the number of household members with the different size and type of refrigerators. 
+
+##Refrigerater's Size VS Household Memeber
+```{r}
+##data cleaning
+#import data
+df <- read.csv("size.csv", stringsAsFactors = F)
+#mark insignificant as NA
+df[df == "Q"] <- NA
+df[df == "N"] <- NA
+
+#rename varaibles
+df <- rename(df, size=X, '1'=X1.member, '2'=X2.members, '3'=X3.members, '4'=X4.members, '5 or more'=X5.or.more.members)
+#remove not useful data
+df$Total.U.S.2 <- NULL
+#gather data for data cleaning
+df.tidy <- df %>%
+  gather(`1`,`2`, `3`, `4`, `5 or more`, key = "household", value = "units")
+#set NA to 0 for graphing
+df.tidy[is.na(df.tidy)] <- 0
+#change clumns' properties
+df.tidy[,1] <- sapply(df.tidy[,1],as.factor)
+df.tidy[,2] <- sapply(df.tidy[,2],as.factor)
+df.tidy[,3] <- sapply(df.tidy[,3],as.numeric)
+```
+
+According to the data, there are 5 kinds of refrigerator: "very large", "large", "median"","small", "half-size and compact" " and "do not use refrigerator". 
+Total_pop stands for the total number of household units who choose certain size of refrigerators. We divide the numbers of household members into 5 levels, 1, 2, 3, 4, 5 or more household members.
+
+##EDA
+
+```{r}
+ggplot()+
+  geom_bar(aes(x=size,y=units,fill=household),data=df.tidy,stat="identity") +
+  coord_flip() +
+  scale_fill_brewer((pallete="Household Members")) +
+  theme_dark() +
+  labs(x = "Refrigerator Size", y = "Number of Housing Units(million)", title = "Refrigerater's Size and Household Memeber")
+```
+
+```{r }
+ggplot()+
+  geom_bar(aes(x=size,y=units,fill=household),data=df.tidy,stat="identity",position = "dodge") +
+  coord_flip() + #set graph to horizontal
+  theme(legend.position = "top") + 
+  scale_fill_brewer(palette="Blues") + #change color
+  theme_dark() + #change background color
+  labs(x = "Refrigerator Size", y = "Number of Housing Units(million)",fill="Household Members", title = "Refrigerater's Size and Household Memeber")
+```
+
+As the graph shows, most of families bought medium or large size refrigerators, few people do not use a refrigerator. Only a few people would buy half-size or compact or very large size. In this picture,we can also conclude that if a family has 2 people, they will have high possibility to buy medium size. 
+
+##Refrigerator's Type VS Household Member
+
+```{r }
+typmen <- read.csv("type.csv", stringsAsFactors = F)
+typmen <- rename(typmen,type=X,'1'=X1.member,'2'=X2.members,'3'=X3.members,'4'=X4.members, '5 or more'=X5.or.more.members)# rename the variable of the refrigerator types
+typmen.tidy <- typmen %>%
+  gather(`1`:`5 or more`, key="member", value= "household")#tidy the data
+
+typmen.tidy$Total.U.S.2<-NULL #drop the column of useless data
+typmen.tidy[typmen.tidy== 'Q']<-0 # change the not significant data into 0
+typmen.tidy[typmen.tidy== 'N']<-0 # change the NA data into 0
+typmen.tidy[,1] <- sapply(typmen.tidy[,1],as.factor) # transform type into factor
+typmen.tidy[,2] <- sapply(typmen.tidy[,2],as.factor) # transform type into factor
+typmen.tidy[,3] <- sapply(typmen.tidy[,3],as.numeric) # transform type into nymeric
+```
+
+Similar as part 1, there are 7 kinds of refrigerator: "Two doors","top freezer"," Two doors side by side" "Two doors, bottom freezer" "Three or more doors" "Three or more doors" "One door" "Half-size/compact" "Do not use refrigerator"
+
+##EDA
+```{r }
+ggplot()+
+  geom_bar(aes(x=type,y=household,fill=member),data=typmen.tidy,stat='identity')+
+  coord_flip() + #plot the bar plot of data
+  scale_fill_brewer((pallete="Household Members")) +
+  theme_dark() +
+  labs(x = "Refrigerator Type", y = "Number of Housing Units(million)", title = "Refrigerater's Type and Household Memeber")
+```
+
+```{r}
+ggplot(data=typmen.tidy)+
+  geom_bar(mapping=aes(x=type,y=household,fill=member),stat = "identity",position = "dodge")+
+  coord_flip() +
+  theme(legend.position = "top") + 
+  scale_fill_brewer(palette="Blues") + #change color
+  theme_dark() +
+  labs(x = "Refrigerator Type", y = "Number of Housing Units(million)", fill = "Household Members",title = "Refrigerater's Type and Household Memeber")#change background color#split the barplot into different kinds
+
+```
+
+
+From the bar plot, we observe "Two doors","top freezer" is the most popular type of refrigerator. Household with two members is the most common family. Thus refrigerator manufacturer should mainly target on the household with two members. For one member household, they prefer upper freezer than side by side two door refrigerator.
+
+##Our Recommendation
+1. The refrigerator manufacturer should produce more medium or large size refrigerators.
+2. The refrigerator manufacturer could spend less time in producing half-size or compact.
+3. The company should target two member household and focus more on their demand.
+4. The manufacturer should produce more top freezer refrigerator since they are more popular in households who purchase two door refrigerator.
+
+##Collaboration
+Jinghan Cui and Sijia Li analyse the relationship between the number of household member and the refrigerator size. Siran Zhao and Mengyun Li analyze the relationship between the number of household member and the refrigerator type.
+
+
+
